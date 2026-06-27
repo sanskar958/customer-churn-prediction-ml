@@ -1,149 +1,185 @@
-# Resume Screening System Using Machine Learning
+# Customer Churn Prediction System
 
-A binary classification system that predicts candidate selection based on academic background, technical skills, and professional experience — trained on 50,000 candidate profiles.
+A supervised machine learning project that predicts whether a telecom customer is likely to churn, built in Python using Google Colab.
 
 ---
 
 ## Project Overview
 
-Automates the initial resume shortlisting process using supervised machine learning. The model evaluates structured candidate attributes and predicts whether a candidate should be selected or not.
+This project uses the IBM Watson Telco Customer Churn dataset to build a binary classification system. It covers the complete machine learning workflow from data loading and preprocessing to model evaluation, feature importance analysis, and an interactive prediction interface.
+
+The system compares Logistic Regression and Random Forest classifiers, automatically selects the best model, and saves it for reuse. A `predict_customer()` function and an ipywidgets-based UI allow instant predictions from new customer data.
 
 ---
 
-## Features Used
+## Features
 
-| Category | Features |
+- Exploratory data analysis with class distribution chart and correlation heatmap
+- Data cleaning including TotalCharges type conversion and missing value handling
+- Preprocessing pipeline using ColumnTransformer with OneHotEncoding
+- Training and comparison of Logistic Regression and Random Forest models
+- Evaluation using Accuracy, Precision, Recall, F1 Score, and Classification Report
+- Side-by-side confusion matrix visualization for both models
+- 5-fold cross-validation for performance consistency check
+- Top 15 feature importances extracted from Random Forest
+- Automatic best model selection based on test accuracy
+- Model persistence with joblib (.pkl files)
+- `predict_customer()` function accepting a customer dictionary
+- Interactive prediction UI using ipywidgets inside Google Colab
+
+---
+
+## Dataset
+
+| Property | Details |
 |---|---|
-| Academic | CGPA, Degree, Specialization, University Tier |
-| Experience | Years of Experience, Internships, Projects, Certifications |
-| Technical Skills | Python, SQL, Machine Learning, Deep Learning (scored 0–10) |
-| Soft Skills | Communication, Leadership |
-| Activity | GitHub Projects, Kaggle Score, Hackathons |
-| Other | Age, Gender, Location, Expected Salary, Employment Gap |
-
-**Target Variable:** `selected` (Yes / No)
+| Name | WA_Fn-UseC_-Telco-Customer-Churn.csv |
+| Source | IBM Watson Telco Customer Churn |
+| Rows | 7,043 |
+| Columns | 21 (20 features + 1 target) |
+| Target Column | Churn (Yes / No) |
+| Class Distribution | No: ~73.5% / Yes: ~26.5% |
+| Missing Values | TotalCharges: 11 rows (whitespace-encoded) |
 
 ---
 
 ## Technologies Used
 
-- Python 3.x
-- pandas, NumPy
-- scikit-learn
-- matplotlib, seaborn
-- joblib
-- ipywidgets (interactive demo in notebook)
+| Library | Version | Purpose |
+|---|---|---|
+| Python | 3.x | Core language |
+| pandas | latest | Data loading and manipulation |
+| numpy | latest | Numerical operations |
+| matplotlib | latest | Charts and plots |
+| seaborn | latest | Correlation heatmap |
+| scikit-learn | latest | Models, preprocessing, evaluation |
+| joblib | latest | Model saving and loading |
+| ipywidgets | latest | Interactive prediction UI |
 
 ---
 
-## Workflow
+## Machine Learning Workflow
 
-```
-Raw CSV (50,000 records)
-  → Drop irrelevant columns (candidate_id)
-  → Encode categorical features (OneHotEncoder)
-  → Encode target variable (LabelEncoder)
-  → Train/Test Split (80/20, stratified)
-  → Train models
-  → Evaluate & compare
-  → Save best model as .pkl
-  → Predict on new candidate input
-```
+1. Load dataset from CSV
+2. Inspect shape, head, info, and missing values
+3. Exploratory Data Analysis (class distribution, correlation heatmap)
+4. Drop `customerID`; convert `TotalCharges` to numeric; fill 11 missing values with median
+5. Label encode `Churn` column
+6. Split features into numerical and categorical; build ColumnTransformer
+7. Train-test split: 80% train (5,634 samples) / 20% test (1,409 samples), stratified
+8. Train Logistic Regression and Random Forest inside scikit-learn Pipelines
+9. Evaluate both models; generate comparison table, bar chart, and confusion matrices
+10. Run 5-fold cross-validation on both models
+11. Plot top 15 feature importances from Random Forest
+12. Auto-select best model; save `churn_model.pkl`, `preprocessor.pkl`, `label_encoder.pkl`
+13. Define `predict_customer()` function; test with a sample customer
+14. Launch ipywidgets interactive prediction interface
 
 ---
 
 ## Models Used
 
-| Model | Notes |
-|---|---|
-| Logistic Regression | Best model — selected based on accuracy (`liblinear` solver) |
-| Random Forest | Compared as alternative classifier |
+**Logistic Regression**
+- solver: default (lbfgs)
+- max_iter: 1000
+- random_state: 42
 
-5-fold cross-validation used for model validation.
+**Random Forest Classifier**
+- n_estimators: 100
+- random_state: 42
+
+Both models are wrapped inside scikit-learn Pipelines with the ColumnTransformer preprocessor, ensuring the same transformations are applied at training and prediction time.
 
 ---
 
-## Results Summary
+## Model Evaluation
 
 | Model | Accuracy | Precision | Recall | F1 Score |
 |---|---|---|---|---|
-| Logistic Regression | 89.26% | 87.04% | 85.95% | 86.49% |
-| Random Forest | 86.93% | 84.43% | 82.55% | 83.48% |
+| Logistic Regression | 0.8048 | 0.6552 | 0.5588 | 0.6032 |
+| Random Forest | 0.7779 | 0.6034 | 0.4759 | 0.5321 |
 
-Logistic Regression achieved the highest accuracy and was selected as the best model for inference.
+**5-Fold Cross-Validation**
+
+| Model | CV Mean Accuracy | Std Deviation |
+|---|---|---|
+| Logistic Regression | 0.8036 | +/- 0.0074 |
+| Random Forest | 0.7876 | +/- 0.0120 |
+
+---
+
+## Best Performing Model
+
+**Logistic Regression** was automatically selected as the best model with a test accuracy of **80.48%** and a cross-validation accuracy of **80.36%**.
+
+It outperformed Random Forest on all four metrics and showed lower variance across folds, indicating more consistent generalization on this dataset.
+
+Saved as: `churn_model.pkl`
+
+---
+
+## Project Structure
+
+```
+Customer-Churn-Prediction/
+│
+├── Customer_Churn_Analysis.ipynb       # Main notebook
+├── WA_Fn-UseC_-Telco-Customer-Churn.csv  # Dataset
+├── churn_model.pkl                     # Saved best model pipeline
+├── preprocessor.pkl                    # Saved ColumnTransformer
+├── label_encoder.pkl                   # Saved LabelEncoder
+├── requirements.txt                    # Python dependencies
+└── README.md
+```
 
 ---
 
 ## Screenshots
 
-### Class Distribution
+**Class Distribution Chart**
+
 ![Class Distribution](screenshots/class_distribution.png)
 
-### Model Comparison
+**Correlation Heatmap**
+
+![Correlation Heatmap](screenshots/correlation_heatmap.png)
+
+**Model Comparison Bar Chart**
+
 ![Model Comparison](screenshots/model_comparison.png)
 
-### Confusion Matrix
-![Confusion Matrix](screenshots/confusion_matrix.png)
+**Confusion Matrices**
 
-### Prediction Output
-![Prediction Output](screenshots/prediction_output.png)
+![Confusion Matrices](screenshots/confusion_matrices.png)
 
-## Installation
+**Feature Importance Chart**
 
-```bash
-git clone https://github.com/sanskar811git/resume-screening-ml.git
-cd resume-screening-ml
-pip install -r requirements.txt
-```
+![Feature Importance](screenshots/feature_importance.png)
+
+**Interactive Prediction UI**
+
+![ipywidgets UI](screenshots/prediction_ui.png)
 
 ---
 
-## Usage
+## Future Scope
 
-**Run the notebook:**
-```bash
-jupyter notebook Resume_Screening_System_ML.ipynb
-```
-
-**Predict on a new candidate:**
-```python
-import joblib, pandas as pd
-
-model = joblib.load("resume_screening_model.pkl")
-preprocessor = joblib.load("preprocessor.pkl")
-le = joblib.load("label_encoder.pkl")
-
-candidate = {
-    'age': 25, 'gender': 'Male', 'degree': 'B.Tech',
-    'specialization': 'Computer Science', 'university_tier': 'Tier 1',
-    'cgpa': 8.5, 'years_experience': 3, 'internships_count': 1,
-    'projects_count': 3, 'certifications_count': 2,
-    'python_skill': 8, 'sql_skill': 7, 'machine_learning_skill': 6,
-    'deep_learning_skill': 5, 'communication_skill': 7,
-    'leadership_skill': 6, 'github_projects': 4,
-    'kaggle_activity_score': 7, 'hackathons_participated': 2,
-    'expected_salary_lpa': 15, 'location': 'Bangalore',
-    'employment_gap_months': 0
-}
-
-input_df = pd.DataFrame([candidate])
-processed = preprocessor.transform(input_df)
-result = le.inverse_transform(model.predict(processed))
-print("Prediction:", result[0])
-```
-
----
-
-## Future Improvements
-
-- Add resume text parsing (NLP-based feature extraction)
-- Build a REST API using FastAPI or Flask
-- Deploy on Streamlit Cloud or Hugging Face Spaces
-- Handle class imbalance with SMOTE
+- Deploy as a web application using Flask or Streamlit
+- Apply SMOTE to handle class imbalance and improve churn recall
+- Hyperparameter tuning with GridSearchCV
+- Add SHAP values for per-customer prediction explanations
+- Integrate with a live CRM or billing system via API
 
 ---
 
 ## Author
 
-**Sanskar Lokhande**  
-[GitHub](https://github.com/sanskar811git) · LinkedIn *(coming soon)*
+**Sanskar S. Gaikwad**
+2nd Year, Computer Science Engineering
+Internship: StarInfoSec
+
+---
+
+## License
+
+This project is licensed under the MIT License.
